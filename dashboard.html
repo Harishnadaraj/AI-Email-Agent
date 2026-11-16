@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Agent Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #38bdf8;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #22c55e;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .box {
+            flex: 1;
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 10px;
+            height: 500px;
+            overflow-y: auto;
+        }
+
+        .msg {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .user {
+            background: #334155;
+        }
+
+        .assistant {
+            background: #0ea5e9;
+            color: white;
+        }
+
+        .log {
+            background: #475569;
+            margin-bottom: 8px;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🤖 AI Agent Dashboard</h1>
+
+<button onclick="loadData()">🔄 Refresh</button>
+
+<div class="container">
+
+    <!-- CHAT -->
+    <div class="box">
+        <h3>💬 Chat History</h3>
+        <div id="history"></div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="box">
+        <h3>📊 Logs</h3>
+        <div id="logs"></div>
+    </div>
+
+</div>
+
+<script>
+
+async function loadData() {
+    try {
+        const historyRes = await fetch("/api/history");
+        const logsRes = await fetch("/api/logs");
+
+        const history = await historyRes.json();
+        const logs = await logsRes.json();
+
+        renderHistory(history);
+        renderLogs(logs);
+
+    } catch (e) {
+        console.error("Error:", e);
+    }
+}
+
+
+// ------------------
+// 💬 CHAT
+// ------------------
+function renderHistory(data) {
+    const el = document.getElementById("history");
+
+    el.innerHTML = data.map(m => `
+        <div class="msg ${m.role}">
+            <b>${m.role}:</b><br>
+            ${m.content}
+        </div>
+    `).join("");
+}
+
+
+// ------------------
+// 📊 LOGS
+// ------------------
+function renderLogs(data) {
+    const el = document.getElementById("logs");
+
+    el.innerHTML = data.map(l => `
+        <div class="log">
+            <b>${l.type}</b><br>
+            ${JSON.stringify(l.data)}
+        </div>
+    `).join("");
+}
+
+
+// 🔥 Load once (no polling)
+loadData();
+
+
+// 🔥 Optional smart refresh (when tab active)
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        loadData();
+    }
+});
+
+</script>
+
+</body>
+</html>
